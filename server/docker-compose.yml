@@ -1,0 +1,23 @@
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    environment:
+      PORT: 8080
+      DATA_FILE: /data/rafael-data.json
+      ADMIN_NAME: ${ADMIN_NAME:-Rafael}
+      ADMIN_IDENTITY: ${ADMIN_IDENTITY}
+      ADMIN_PIN: ${ADMIN_PIN}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      TRUST_PROXY: ${TRUST_PROXY:-1}
+    ports:
+      - "8080:8080"
+    volumes:
+      - rafael_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+volumes:
+  rafael_data:
