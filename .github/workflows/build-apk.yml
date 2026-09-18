@@ -1,0 +1,68 @@
+name: Generar APK Rafael Movil
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verificar integridad FINAL 1.0
+        run: python3 tool/preflight.py
+      - name: Probar servidor (flujo completo)
+        working-directory: server
+        run: |
+          npm install --no-audit --no-fund
+          npm run smoke
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Generar estructura Android si falta
+        run: |
+          if [ ! -d android ]; then flutter create --platforms=android --org com.rafaelmovil .; fi
+      - name: Habilitar permisos GPS Android
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('android/app/src/main/AndroidManifest.xml')
+          s=p.read_text()
+          perms='''    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+'''
+          if 'ACCESS_FINE_LOCATION' not in s:
+              s=s.replace('<manifest xmlns:android="http://schemas.android.com/apk/res/android">', '<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n'+perms)
+          p.write_text(s)
+          PY
+      - name: Dependencias
+        run: flutter pub get
+      - name: Analizar
+        run: flutter analyze
+      - name: Pruebas Flutter
+        run: flutter test
+      - name: Verificar servidor de producción
+        env:
+          RAFAEL_API_URL: ${{ vars.RAFAEL_API_URL }}
+        run: |
+          if [ -z "$RAFAEL_API_URL" ]; then
+            echo "ERROR: configura RAFAEL_API_URL antes de generar el APK para distribución."
+            exit 1
+          fi
+          case "$RAFAEL_API_URL" in
+            https://*) ;;
+            *) echo "ERROR: el APK de distribución exige una URL HTTPS."; exit 1 ;;
+          esac
+          BASE="${RAFAEL_API_URL%/}"
+          curl --fail --silent --show-error --max-time 20 "$BASE/health" >/dev/null || { echo "ERROR: /health no responde."; exit 1; }
+          curl --fail --silent --show-error --max-time 20 "$BASE/ready" >/dev/null || { echo "ERROR: /ready no confirma almacenamiento listo."; exit 1; }
+      - name: Compilar APK release
+        run: flutter build apk --release --dart-define=RAFAEL_API_URL=${{ vars.RAFAEL_API_URL }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rafael-movil-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
