@@ -49,6 +49,8 @@ jobs:
           sudo apt-get install -y -qq imagemagick
           convert -background none assets/rafael_icon.svg -resize 1024x1024 assets/rafael_logo_icon.png
           sed -i 's|assets/rafael_logo.jpg|assets/rafael_logo_icon.png|g' pubspec.yaml
+          sed -i 's|assets/rafael_logo.jpg|assets/rafael_logo_icon.png|g' lib/main.dart
+          sed -i 's|android:label="rafael_movil_holguin"|android:label="Rafael Móvil Holguín"|g' android/app/src/main/AndroidManifest.xml
           dart run flutter_launcher_icons
       - name: Analizar
         run: flutter analyze --no-fatal-warnings --no-fatal-infos
