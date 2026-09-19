@@ -170,7 +170,7 @@ class _AdminPinScreenState extends State<AdminPinScreen>{
    setState((){loading=true;error=null;});
    try{
      final backend=RestRafaelBackend(baseUrl:AppConfig.apiUrl);
-     final result=await backend.login(identity:identity.text.trim(),pin:pin.text);
+     final result=await backend.login(identity:loginIdentity,pin:pin.text);
      final user=result['user'];
      if(user is! Map || user['role']!='admin'){await backend.logout();throw Exception('Esta cuenta no es administrador.');}
      appState.adminToken=result['token']?.toString();
@@ -226,11 +226,21 @@ class _LoginScreenState extends State<LoginScreen> {
   final identity = TextEditingController();
   final pin = TextEditingController();
   bool loading = false;
+  bool checkingIdentity = true;
+  String? rememberedIdentity;
   String? error;
+  @override void initState(){super.initState();_loadRememberedIdentity();}
+  Future<void> _loadRememberedIdentity() async {
+    final role=widget.role=='Conductor'?'driver':'client';
+    final saved=await appState.sessionService.rememberedIdentity(role);
+    if(!mounted)return;
+    setState((){rememberedIdentity=saved;checkingIdentity=false;});
+  }
   @override void dispose(){identity.dispose();pin.dispose();super.dispose();}
   Future<void> submit() async {
-    if(identity.text.trim().length < 5 || pin.text.length != 6 || int.tryParse(pin.text) == null){
-      setState(()=>error='Escribe tu carnet y PIN de 6 dígitos.'); return;
+    final loginIdentity=(rememberedIdentity??identity.text).trim();
+    if(loginIdentity.length < 5 || pin.text.length != 6 || int.tryParse(pin.text) == null){
+      setState(()=>error=rememberedIdentity==null?'Escribe tu carnet y PIN de 6 dígitos.':'Escribe tu PIN de 6 dígitos.'); return;
     }
     setState((){loading=true;error=null;});
     try {
@@ -245,12 +255,12 @@ class _LoginScreenState extends State<LoginScreen> {
       final name=user['name']?.toString()??'';
       if(expected=='driver'){
         final vehicle=user['vehicle']?.toString()??'Auto';
-        appState.registerDriver(name,identity.text.trim(),vehicle);
+        appState.registerDriver(name,loginIdentity,vehicle);
         appState.driverToken=token;
         await appState.persistDriverSession();
         if(mounted) Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder:(_)=>const DriverHome()),(r)=>r.isFirst);
       } else {
-        appState.registerClient(name,identity.text.trim());
+        appState.registerClient(name,loginIdentity);
         appState.clientToken=token;
         await appState.persistClientSession();
         if(mounted) Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder:(_)=>const ClientHome()),(r)=>r.isFirst);
@@ -271,8 +281,16 @@ class _LoginScreenState extends State<LoginScreen> {
   @override Widget build(BuildContext context)=>Scaffold(
     appBar:AppBar(title:Text('Entrar como ${widget.role}')),
     body:ListView(padding:const EdgeInsets.all(24),children:[
-      TextField(controller:identity,keyboardType:TextInputType.number,decoration:const InputDecoration(labelText:'Carnet de identidad',prefixIcon:Icon(Icons.badge))),
-      const SizedBox(height:10),
+      if(checkingIdentity) const Center(child:CircularProgressIndicator()) else if(rememberedIdentity!=null) ...[
+        const Icon(Icons.verified_user,size:54),
+        const SizedBox(height:8),
+        Text('Cuenta vinculada en este teléfono',textAlign:TextAlign.center,style:Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height:6),
+        const Text('Entra solamente con tu PIN. No necesitas volver a escribir el carnet.',textAlign:TextAlign.center),
+      ] else ...[
+        TextField(controller:identity,keyboardType:TextInputType.number,decoration:const InputDecoration(labelText:'Carnet de identidad',prefixIcon:Icon(Icons.badge))),
+        const SizedBox(height:10),
+      ],
       TextField(controller:pin,keyboardType:TextInputType.number,maxLength:6,obscureText:true,decoration:const InputDecoration(labelText:'PIN de 6 dígitos',prefixIcon:Icon(Icons.password))),
       if(error!=null)Padding(padding:const EdgeInsets.only(bottom:10),child:Text(error!,style:TextStyle(color:Theme.of(context).colorScheme.error))),
       FilledButton(onPressed:loading?null:submit,child:Text(loading?'Entrando…':'Entrar')),
