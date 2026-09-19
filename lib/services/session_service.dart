@@ -30,8 +30,20 @@ class SessionService {
   Future<void> rememberIdentity({required String role, required String identity}) =>
       _storage.write(key: role == 'driver' ? _rememberedDriverIdentity : _rememberedClientIdentity, value: identity);
 
-  Future<String?> rememberedIdentity(String role) =>
-      _storage.read(key: role == 'driver' ? _rememberedDriverIdentity : _rememberedClientIdentity);
+  Future<String?> rememberedIdentity(String role) async {
+    final remembered = await _storage.read(key: role == 'driver' ? _rememberedDriverIdentity : _rememberedClientIdentity);
+    if (remembered != null && remembered.trim().isNotEmpty) return remembered;
+    // Migración para cuentas creadas con APK anteriores: si la sesión local
+    // pertenece al mismo rol, reutiliza el carnet ya almacenado y lo vincula
+    // automáticamente. Así una actualización no vuelve a pedirlo.
+    final savedRole = await _storage.read(key:_role);
+    final savedIdentity = await _storage.read(key:_identity);
+    if (savedRole == role && savedIdentity != null && savedIdentity.trim().isNotEmpty) {
+      await rememberIdentity(role: role, identity: savedIdentity);
+      return savedIdentity;
+    }
+    return null;
+  }
 
   Future<void> forgetIdentity(String role) =>
       _storage.delete(key: role == 'driver' ? _rememberedDriverIdentity : _rememberedClientIdentity);
