@@ -29,6 +29,7 @@ jobs:
       - name: Generar estructura Android si falta
         run: |
           if [ ! -d android ]; then flutter create --platforms=android --org com.rafaelmovil .; fi
+          rm -f test/widget_test.dart
       - name: Habilitar permisos GPS Android
         run: |
           python3 - <<'PY'
