@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: rafael-movil-api
+    runtime: docker
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: ./server
+    healthCheckPath: /health
+    envVars:
+      - key: ADMIN_NAME
+        value: Rafael
+      - key: ADMIN_IDENTITY
+        sync: false
+      - key: ADMIN_PIN
+        sync: false
+      - key: DATA_FILE
+        value: /data/rafael-data.json
+      - key: TRUST_PROXY
+        value: "1"
+    disk:
+      name: rafael-movil-data
+      mountPath: /data
+      sizeGB: 1
