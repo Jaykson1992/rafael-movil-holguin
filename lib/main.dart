@@ -245,7 +245,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState((){loading=true;error=null;});
     try {
       final backend=RestRafaelBackend(baseUrl:AppConfig.apiUrl);
-      final result=await backend.login(identity:identity.text.trim(),pin:pin.text);
+      final result=await backend.login(identity:loginIdentity,pin:pin.text);
       final user=result['user'];
       if(user is! Map) throw Exception('Respuesta inválida');
       final expected=widget.role=='Conductor'?'driver':'client';
