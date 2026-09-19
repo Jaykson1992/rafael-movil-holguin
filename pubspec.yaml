@@ -30,5 +30,3 @@ flutter_launcher_icons:
   android: true
   ios: false
   image_path: "assets/rafael_logo.jpg"
-  adaptive_icon_foreground: "assets/rafael_logo.jpg"
-  adaptive_icon_background: "#FFFFFF"
