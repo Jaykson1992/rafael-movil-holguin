@@ -24,11 +24,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/rafael_logo.png
+    - assets/rafael_logo.jpg
 
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "assets/rafael_logo.png"
-  adaptive_icon_foreground: "assets/rafael_logo.png"
+  image_path: "assets/rafael_logo.jpg"
+  adaptive_icon_foreground: "assets/rafael_logo.jpg"
   adaptive_icon_background: "#FFFFFF"
