@@ -1,0 +1,47 @@
+name: Generar APK de prueba local
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/build-demo-apk.yml'
+jobs:
+  build-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verificar proyecto
+        run: python3 tool/preflight.py
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Generar Android
+        run: |
+          if [ ! -d android ]; then flutter create --platforms=android --org com.rafaelmovil .; fi
+      - name: Permisos Android
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('android/app/src/main/AndroidManifest.xml')
+          s=p.read_text()
+          perms='''    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.INTERNET" />\n'''
+          if 'ACCESS_FINE_LOCATION' not in s:
+              s=s.replace('<manifest xmlns:android="http://schemas.android.com/apk/res/android">', '<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n'+perms)
+          p.write_text(s)
+          PY
+      - name: Dependencias
+        run: flutter pub get
+      - name: Analizar
+        run: flutter analyze
+      - name: Pruebas
+        run: flutter test
+      - name: Compilar APK de prueba
+        run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rafael-movil-prueba-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
