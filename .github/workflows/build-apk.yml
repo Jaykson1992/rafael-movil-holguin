@@ -43,17 +43,13 @@ jobs:
           PY
       - name: Dependencias
         run: flutter pub get
-      - name: Conservar icono Android oficial
+      - name: Generar icono Android Rafael Movil
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('pubspec.yaml')
-          s=p.read_text()
-          start=s.find('\nflutter_launcher_icons:')
-          if start >= 0:
-              s=s[:start].rstrip()+'\n'
-          p.write_text(s)
-          PY
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+          convert -background none assets/rafael_icon.svg -resize 1024x1024 assets/rafael_logo_icon.png
+          sed -i 's|assets/rafael_logo.jpg|assets/rafael_logo_icon.png|g' pubspec.yaml
+          dart run flutter_launcher_icons
       - name: Analizar
         run: flutter analyze --no-fatal-warnings --no-fatal-infos
       - name: Pruebas Flutter
