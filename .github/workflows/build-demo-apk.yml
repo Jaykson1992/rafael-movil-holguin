@@ -7,6 +7,8 @@ on:
       - '.github/workflows/build-demo-apk.yml'
       - 'lib/**'
       - 'test/**'
+permissions:
+  contents: write
 jobs:
   build-demo:
     runs-on: ubuntu-latest
@@ -43,7 +45,9 @@ jobs:
         run: flutter test
       - name: Compilar APK de prueba
         run: flutter build apk --release
-      - uses: actions/upload-artifact@v4
-        with:
-          name: rafael-movil-prueba-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Publicar APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk Rafael-Movil-Holguin-prueba.apk
+          gh release create apk-prueba Rafael-Movil-Holguin-prueba.apk --title "Rafael Movil Holguin APK de prueba" --notes "APK local de prueba" --latest=false
