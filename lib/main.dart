@@ -151,8 +151,38 @@ class ConnectionStatusCard extends StatefulWidget {const ConnectionStatusCard({s
 class _ConnectionStatusCardState extends State<ConnectionStatusCard>{ServerHealth? health;bool loading=false;@override void initState(){super.initState();check();}Future<void> check() async{setState(()=>loading=true);final h=await ServerHealthService(AppConfig.apiUrl).check();if(mounted)setState((){health=h;loading=false;});}@override Widget build(BuildContext c){final h=health;return Card(child:ListTile(leading:Icon(h?.online==true?Icons.cloud_done:Icons.cloud_off),title:Text(h?.online==true?'Servidor conectado':'Modo local / sin servidor'),subtitle:Text(loading?'Comprobando conexión…':(h?.message??'Sin comprobar')),trailing:h?.latencyMs==null?IconButton(onPressed:loading?null:check,icon:const Icon(Icons.refresh)):Text('${h!.latencyMs} ms')));}}
 
 class RoleScreen extends StatelessWidget {const RoleScreen({super.key});
- @override Widget build(BuildContext c)=>Scaffold(body:SafeArea(child:Padding(padding:const EdgeInsets.all(24),child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[const Spacer(),Image.asset('assets/rafael_logo.jpg',height:120,fit:BoxFit.contain),const Text('Rafael Móvil',textAlign:TextAlign.center,style:TextStyle(fontSize:34,fontWeight:FontWeight.bold)),const Text('TRANSPORTE HOLGUÍN',textAlign:TextAlign.center,style:TextStyle(letterSpacing:2,fontWeight:FontWeight.w600)),const SizedBox(height:5),const Text('Tu viaje, tu precio',textAlign:TextAlign.center),const Spacer(),go(c,'Cliente',Icons.person,appState.clientRegistered?const ClientHome():const AccountEntryScreen(role:'Cliente')),const SizedBox(height:10),go(c,'Conductor',Icons.local_taxi,appState.driverRegistered?const DriverHome():const AccountEntryScreen(role:'Conductor')),const SizedBox(height:10),go(c,'Administrador',Icons.admin_panel_settings,const AdminPinScreen()),const Spacer()] ))));
- static Widget go(BuildContext c,String s,IconData i,Widget p)=>FilledButton.icon(onPressed:()=>Navigator.push(c,MaterialPageRoute(builder:(_)=>p)),icon:Icon(i),label:Padding(padding:const EdgeInsets.all(14),child:Text(s)));}
+ @override Widget build(BuildContext c)=>Scaffold(body:Container(
+  decoration:const BoxDecoration(gradient:LinearGradient(begin:Alignment.topCenter,end:Alignment.bottomCenter,colors:[Color(0xff0878d1),Color(0xfff7fbff)])),
+  child:SafeArea(child:ListView(padding:const EdgeInsets.fromLTRB(18,18,18,24),children:[
+   Container(padding:const EdgeInsets.all(20),decoration:BoxDecoration(borderRadius:BorderRadius.circular(30),gradient:const LinearGradient(colors:[Color(0xffffc107),Color(0xffff7043),Color(0xff1565c0)]),boxShadow:const [BoxShadow(blurRadius:18,color:Colors.black26,offset:Offset(0,8))]),child:Column(children:[
+    const Row(mainAxisAlignment:MainAxisAlignment.center,children:[Icon(Icons.location_on,color:Colors.white,size:34),SizedBox(width:8),Text('HOLGUÍN',style:TextStyle(color:Colors.white,fontWeight:FontWeight.w900,letterSpacing:3,fontSize:20))]),
+    const SizedBox(height:10),const Text('Rafael Móvil',textAlign:TextAlign.center,style:TextStyle(color:Colors.white,fontSize:42,fontWeight:FontWeight.w900,shadows:[Shadow(blurRadius:8,color:Colors.black38)])),
+    const Text('Tu viaje, tu precio',style:TextStyle(color:Colors.white,fontSize:20,fontWeight:FontWeight.w700)),
+    const SizedBox(height:18),
+    const Row(mainAxisAlignment:MainAxisAlignment.spaceEvenly,children:[_VehicleBadge(Icons.directions_car,'Auto'),_VehicleBadge(Icons.two_wheeler,'Moto'),_VehicleBadge(Icons.pedal_bike,'Bicitaxi'),_VehicleBadge(Icons.electric_rickshaw,'Triciclo')])
+   ])),
+   const SizedBox(height:16),
+   const Row(mainAxisAlignment:MainAxisAlignment.spaceAround,children:[_FeatureBadge(Icons.shield,'Seguro'),_FeatureBadge(Icons.handshake,'Confiable'),_FeatureBadge(Icons.location_on,'Rápido'),_FeatureBadge(Icons.groups,'Para todos')]),
+   const SizedBox(height:18),
+   _roleButton(c,'Cliente','Solicita tu viaje',Icons.person,const Color(0xff087ff5),appState.clientRegistered?const ClientHome():const AccountEntryScreen(role:'Cliente')),
+   const SizedBox(height:10),
+   _roleButton(c,'Conductor','Gana con tu vehículo',Icons.local_taxi,const Color(0xff08a34a),appState.driverRegistered?const DriverHome():const AccountEntryScreen(role:'Conductor')),
+   const SizedBox(height:10),
+   _roleButton(c,'Administrador','Panel privado de Rafael',Icons.admin_panel_settings,const Color(0xffff7a00),const AdminPinScreen()),
+   const SizedBox(height:18),
+   const Card(child:Padding(padding:EdgeInsets.all(14),child:Row(mainAxisAlignment:MainAxisAlignment.spaceAround,children:[_QuickInfo(Icons.support_agent,'Soporte'),_QuickInfo(Icons.menu_book,'Cómo funciona'),_QuickInfo(Icons.local_police,'Policía 106'),_QuickInfo(Icons.help,'Ayuda')]))),
+   const SizedBox(height:8),const Text('Holguín · Siempre en movimiento',textAlign:TextAlign.center,style:TextStyle(color:Color(0xff0d3b72),fontWeight:FontWeight.w800,fontSize:17))
+  ]))
+ ));
+ static Widget _roleButton(BuildContext c,String title,String subtitle,IconData icon,Color color,Widget page)=>SizedBox(height:78,child:FilledButton(
+  style:FilledButton.styleFrom(backgroundColor:color,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(24))),
+  onPressed:()=>Navigator.push(c,MaterialPageRoute(builder:(_)=>page)),
+  child:Row(children:[Icon(icon,size:34),const SizedBox(width:16),Expanded(child:Column(mainAxisAlignment:MainAxisAlignment.center,crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:const TextStyle(fontSize:23,fontWeight:FontWeight.w800)),Text(subtitle)])),const Icon(Icons.chevron_right,size:34)])
+ ));
+}
+class _VehicleBadge extends StatelessWidget {const _VehicleBadge(this.icon,this.text);final IconData icon;final String text;@override Widget build(BuildContext c)=>Column(children:[CircleAvatar(backgroundColor:Colors.white,child:Icon(icon,color:const Color(0xff0d4c8c))),const SizedBox(height:4),Text(text,style:const TextStyle(color:Colors.white,fontWeight:FontWeight.w700,fontSize:11))]);}
+class _FeatureBadge extends StatelessWidget {const _FeatureBadge(this.icon,this.text);final IconData icon;final String text;@override Widget build(BuildContext c)=>Column(children:[CircleAvatar(backgroundColor:Colors.white,child:Icon(icon,color:const Color(0xff1565c0))),const SizedBox(height:4),Text(text,style:const TextStyle(fontWeight:FontWeight.w700,fontSize:11))]);}
+class _QuickInfo extends StatelessWidget {const _QuickInfo(this.icon,this.text);final IconData icon;final String text;@override Widget build(BuildContext c)=>SizedBox(width:68,child:Column(children:[Icon(icon,color:const Color(0xff1565c0)),const SizedBox(height:5),Text(text,textAlign:TextAlign.center,style:const TextStyle(fontSize:11,fontWeight:FontWeight.w700))]));}
 
 
 class AdminPinScreen extends StatefulWidget {const AdminPinScreen({super.key});@override State<AdminPinScreen> createState()=>_AdminPinScreenState();}
