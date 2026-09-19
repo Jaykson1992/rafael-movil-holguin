@@ -43,6 +43,12 @@ jobs:
           PY
       - name: Dependencias
         run: flutter pub get
+      - name: Convertir logo oficial a PNG compatible
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+          magick assets/rafael_logo.jpg -interlace none -resize 1024x1024 -gravity center -extent 1024x1024 assets/rafael_logo_icon.png
+          sed -i 's|assets/rafael_logo.jpg|assets/rafael_logo_icon.png|g' pubspec.yaml
       - name: Generar icono oficial Rafael Movil
         run: dart run flutter_launcher_icons
       - name: Analizar
