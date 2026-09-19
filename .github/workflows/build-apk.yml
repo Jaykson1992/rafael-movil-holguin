@@ -3,9 +3,13 @@ on:
   workflow_dispatch:
   push:
     branches: [ main ]
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      RAFAEL_API_URL: https://rafael-movil-api-production.up.railway.app
     steps:
       - uses: actions/checkout@v4
       - name: Verificar integridad FINAL build 81
@@ -43,8 +47,6 @@ jobs:
       - name: Pruebas Flutter
         run: flutter test
       - name: Verificar servidor de producción
-        env:
-          RAFAEL_API_URL: ${{ vars.RAFAEL_API_URL }}
         run: |
           if [ -z "$RAFAEL_API_URL" ]; then
             echo "ERROR: configura RAFAEL_API_URL antes de generar el APK para distribución."
@@ -58,8 +60,15 @@ jobs:
           curl --fail --silent --show-error --max-time 20 "$BASE/health" >/dev/null || { echo "ERROR: /health no responde."; exit 1; }
           curl --fail --silent --show-error --max-time 20 "$BASE/ready" >/dev/null || { echo "ERROR: /ready no confirma almacenamiento listo."; exit 1; }
       - name: Compilar APK release
-        run: flutter build apk --release --dart-define=RAFAEL_API_URL=${{ vars.RAFAEL_API_URL }}
+        run: flutter build apk --release --dart-define=RAFAEL_API_URL="$RAFAEL_API_URL"
       - uses: actions/upload-artifact@v4
         with:
           name: rafael-movil-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Publicar APK final para descarga
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk Rafael-Movil-Holguin-FINAL-v11.apk
+          gh release delete final-v11 --yes --cleanup-tag || true
+          gh release create final-v11 Rafael-Movil-Holguin-FINAL-v11.apk --title "Rafael Móvil Holguín FINAL v11" --notes "APK final conectado al backend HTTPS de producción."
