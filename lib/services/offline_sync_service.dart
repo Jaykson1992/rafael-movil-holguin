@@ -29,11 +29,16 @@ class OfflineSyncService {
         ..clear()
         ..addAll(decoded.whereType<Map>().map((raw) {
           final map = raw.cast<String, dynamic>();
+          final rawType = map['type']?.toString() ?? '';
+          final type = SyncActionType.values.where((item) => item.name == rawType).firstOrNull;
+          if (type == null) return null;
           return PendingSyncAction(
-            type: map['type']?.toString() ?? '',
+            id: map['id']?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
+            type: type,
             payload: (map['payload'] as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
+            createdAt: DateTime.tryParse(map['createdAt']?.toString() ?? '') ?? DateTime.now(),
           );
-        }).where((a) => a.type.isNotEmpty));
+        }).whereType<PendingSyncAction>());
     } catch (_) {
       // Archivo corrupto: no bloquea el arranque ni destruye el archivo.
     }
@@ -87,7 +92,12 @@ class OfflineSyncService {
     await file.parent.create(recursive: true);
     final tmp = File('$path.tmp');
     final data = _queue
-        .map((a) => <String, dynamic>{'type': a.type, 'payload': a.payload})
+        .map((a) => <String, dynamic>{
+              'id': a.id,
+              'type': a.type.name,
+              'payload': a.payload,
+              'createdAt': a.createdAt.toUtc().toIso8601String(),
+            })
         .toList(growable: false);
     await tmp.writeAsString(jsonEncode(data), flush: true);
     if (await file.exists()) await file.delete();

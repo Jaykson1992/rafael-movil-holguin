@@ -17,7 +17,7 @@ class _AdminDriversPanelState extends State<AdminDriversPanel> {
   Future<void> _renew(String id) async {try{await widget.backend.renewDriver(id);await _load();_msg('Mensualidad renovada.');}catch(_){_msg('No se pudo renovar.');}}
   void _msg(String s){if(mounted)ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(s)));}
   IconData _vehicleIcon(String v){switch(v.toLowerCase()){case'moto':return Icons.two_wheeler;case'bicitaxi':return Icons.pedal_bike;case'triciclo':return Icons.electric_rickshaw;default:return Icons.directions_car;}}
-  Widget _avatar(Map<String,dynamic>d){final url=d['photoUrl']?.toString()??'';return CircleAvatar(radius:27,backgroundImage:url.startsWith('http')?NetworkImage(url):(url.startsWith('data:image')?MemoryImage(base64Decode(url.split(',').last)):null),child:(url.startsWith('http')||url.startsWith('data:image'))?null:const Icon(Icons.person,size:30));}
+  Widget _avatar(Map<String,dynamic>d){final url=d['photoUrl']?.toString()??'';ImageProvider<Object>? image;if(url.startsWith('http')){image=NetworkImage(url);}else if(url.startsWith('data:image')){image=MemoryImage(base64Decode(url.split(',').last));}return CircleAvatar(radius:27,backgroundImage:image,child:image==null?const Icon(Icons.person,size:30):null);}
   @override Widget build(BuildContext context){return Card(child:Padding(padding:const EdgeInsets.all(12),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
     Row(children:[const Expanded(child:Text('Conductores',style:TextStyle(fontSize:20,fontWeight:FontWeight.bold))),IconButton(onPressed:loading?null:_load,icon:const Icon(Icons.refresh))]),
     const Text('Rafael puede revisar identidad, vehículo, mensualidad y estado de cada conductor.'),const SizedBox(height:8),
@@ -28,5 +28,5 @@ class _AdminDriversPanelState extends State<AdminDriversPanel> {
         Text('Carnet: ${d['identity']??'-'}'),const SizedBox(height:4),Text(valid?'Mensualidad hasta ${paidDate.month}/${paidDate.day}/${paidDate.year}':'Mensualidad vencida o pendiente'),
         SwitchListTile(contentPadding:EdgeInsets.zero,value:active,onChanged:id.isEmpty?null:(v)=>_active(id,v),title:const Text('Cuenta activa')),OutlinedButton.icon(onPressed:id.isEmpty?null:()=>_renew(id),icon:const Icon(Icons.receipt_long),label:const Text('Renovar mensualidad y registrar acceso')),
       ]))]));}),
-  ]))));}
+  ])));}
 }
