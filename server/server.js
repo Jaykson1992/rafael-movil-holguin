@@ -142,7 +142,7 @@ app.get('/v1/driver/inbox',auth,role('driver'),(req,res)=>{
   res.json(data);
 });
 app.get('/v1/admin/drivers',auth,role('admin'),(req,res)=>{
-  const data=Object.values(db.users).filter(u=>u.role==='driver').map(u=>({...publicUser(u),subscription:db.drivers[u.id]||null,busy:driverBusy(u.id),location:freshLocation(db.locations[u.id])?db.locations[u.id]:null}));
+  const data=Object.values(db.users).filter(u=>u.role==='driver').map(u=>{const loc=db.locations[u.id];const online=freshLocation(loc);return {...publicUser(u),subscription:db.drivers[u.id]||null,busy:driverBusy(u.id),online,availability:online?(driverBusy(u.id)?'busy':'available'):'offline',location:online?loc:null};});
   res.json(data);
 });
 app.get('/v1/admin/clients',auth,role('admin'),(req,res)=>{
