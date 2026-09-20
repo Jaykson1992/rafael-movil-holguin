@@ -79,6 +79,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp build/app/outputs/flutter-apk/app-release.apk Rafael-Movil-Holguin-FINAL-v11.apk
-          gh release delete final-v11 --yes --cleanup-tag || true
-          gh release create final-v11 Rafael-Movil-Holguin-FINAL-v11.apk --title "Rafael Móvil Holguín FINAL v11" --notes "APK final conectado al backend HTTPS de producción."
+          cp build/app/outputs/flutter-apk/app-release.apk Rafael-Movil-Holguin-FINAL-v12.apk
+          gh release delete final-v12 --yes --cleanup-tag || true
+          gh release create final-v12 Rafael-Movil-Holguin-FINAL-v12.apk --title "Rafael Móvil Holguín FINAL v11" --notes "APK final conectado al backend HTTPS de producción."
