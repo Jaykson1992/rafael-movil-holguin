@@ -52,9 +52,9 @@ class RestRafaelBackend implements RafaelBackend {
     }
   }
 
-  Future<Map<String, dynamic>> register({required String name, required String identity, required String role, required String pin, String? vehicle}) =>
+  Future<Map<String, dynamic>> register({required String name, required String identity, required String phone, required String role, required String pin, String? vehicle}) =>
       _json('POST', '/v1/auth/register', body: {
-        'name': name, 'identity': identity, 'role': role, 'pin': pin,
+        'name': name, 'identity': identity, 'phone': phone, 'role': role, 'pin': pin,
         if (vehicle != null) 'vehicle': vehicle.toLowerCase().replaceAll(' ', ''),
       });
 
