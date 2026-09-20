@@ -342,7 +342,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>{
      String? token;
      if(AppConfig.hasProductionServer){
        final backend=RestRafaelBackend(baseUrl:AppConfig.apiUrl);
-       await backend.register(name:name.text.trim(),identity:id.text.trim(),role:driver?'driver':'client',pin:pin.text,vehicle:driver?vehicle:null);
+       await backend.register(name:name.text.trim(),identity:id.text.trim(),phone:phone.text.trim(),role:driver?'driver':'client',pin:pin.text,vehicle:driver?vehicle:null);
        final login=await backend.login(identity:id.text.trim(),pin:pin.text);
        token=login['token']?.toString();
        if(token==null||token.isEmpty)throw Exception('No se recibió sesión');
