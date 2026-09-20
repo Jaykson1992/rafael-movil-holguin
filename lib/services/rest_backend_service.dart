@@ -95,6 +95,10 @@ class RestRafaelBackend implements RafaelBackend {
   Future<Map<String, dynamic>> setClientActive(String clientId, bool active) =>
       _json('PATCH', '/v1/admin/clients/$clientId', body: {'active': active});
 
+  Future<void> adminDeleteTrip(String tripId) async {
+    await _json('DELETE', '/v1/admin/trips/$tripId');
+  }
+
   Future<List<Map<String, dynamic>>> adminAudit({int limit = 50, String? action, String? role, String? query}) {
     final params=<String>['limit=$limit'];
     if(action!=null&&action.isNotEmpty) params.add('action=${Uri.encodeQueryComponent(action)}');
