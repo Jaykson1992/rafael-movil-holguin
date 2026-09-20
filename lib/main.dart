@@ -165,9 +165,9 @@ class RoleScreen extends StatelessWidget {const RoleScreen({super.key});
    const SizedBox(height:16),
    const Row(mainAxisAlignment:MainAxisAlignment.spaceAround,children:[_FeatureBadge(Icons.shield,'Seguro'),_FeatureBadge(Icons.handshake,'Confiable'),_FeatureBadge(Icons.location_on,'Rápido'),_FeatureBadge(Icons.groups,'Para todos')]),
    const SizedBox(height:18),
-   _roleButton(c,'Cliente','Solicita tu viaje',Icons.person,const Color(0xff087ff5),appState.clientRegistered?const ClientHome():const AccountEntryScreen(role:'Cliente')),
+   _roleButton(c,'Cliente','Solicita tu viaje',Icons.person,const Color(0xff087ff5),appState.clientRegistered?const ClientHome():const PinFirstEntryScreen(role:'Cliente')),
    const SizedBox(height:10),
-   _roleButton(c,'Conductor','Gana con tu vehículo',Icons.local_taxi,const Color(0xff08a34a),appState.driverRegistered?const DriverHome():const AccountEntryScreen(role:'Conductor')),
+   _roleButton(c,'Conductor','Gana con tu vehículo',Icons.local_taxi,const Color(0xff08a34a),appState.driverRegistered?const DriverHome():const PinFirstEntryScreen(role:'Conductor')),
    const SizedBox(height:10),
    _roleButton(c,'Administrador','Panel privado de Rafael',Icons.admin_panel_settings,const Color(0xffff7a00),const AdminPinScreen()),
    const SizedBox(height:18),
@@ -327,6 +327,21 @@ class _LoginScreenState extends State<LoginScreen> {
       FilledButton(onPressed:loading?null:submit,child:Text(loading?'Entrando…':'Entrar')),
     ]),
   );
+}
+
+class PinFirstEntryScreen extends StatefulWidget {
+ const PinFirstEntryScreen({super.key,required this.role}); final String role;
+ @override State<PinFirstEntryScreen> createState()=>_PinFirstEntryScreenState();
+}
+class _PinFirstEntryScreenState extends State<PinFirstEntryScreen>{
+ bool checking=true; String? remembered;
+ @override void initState(){super.initState();load();}
+ Future<void> load() async {final role=widget.role=='Conductor'?'driver':'client';final x=await appState.sessionService.rememberedIdentity(role);if(!mounted)return;setState((){remembered=x;checking=false;});}
+ @override Widget build(BuildContext c){
+  if(checking)return const Scaffold(body:Center(child:CircularProgressIndicator()));
+  if(remembered!=null)return LoginScreen(role:widget.role);
+  return AccountEntryScreen(role:widget.role);
+ }
 }
 
 class RegistrationScreen extends StatefulWidget {const RegistrationScreen({super.key,required this.role});final String role;@override State<RegistrationScreen> createState()=>_RegistrationScreenState();}
