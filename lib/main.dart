@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'models/sync_models.dart';
 import 'services/app_config.dart';
 import 'services/live_trip_tracking_service.dart';
@@ -170,7 +171,7 @@ class RoleScreen extends StatelessWidget {const RoleScreen({super.key});
    const SizedBox(height:10),
    _roleButton(c,'Administrador','Panel privado de Rafael',Icons.admin_panel_settings,const Color(0xffff7a00),const AdminPinScreen()),
    const SizedBox(height:18),
-   const Card(child:Padding(padding:EdgeInsets.all(14),child:Row(mainAxisAlignment:MainAxisAlignment.spaceAround,children:[_QuickInfo(Icons.support_agent,'Soporte'),_QuickInfo(Icons.menu_book,'Cómo funciona'),_QuickInfo(Icons.local_police,'Policía 106'),_QuickInfo(Icons.help,'Ayuda')]))),
+   Card(child:Padding(padding:const EdgeInsets.all(14),child:Row(mainAxisAlignment:MainAxisAlignment.spaceAround,children:[_QuickInfo(Icons.support_agent,'Soporte',onTap:()=>launchUrl(Uri.parse('https://wa.me/5354404056'),mode:LaunchMode.externalApplication)),_QuickInfo(Icons.menu_book,'Cómo funciona',onTap:()=>showDialog(context:c,builder:(_)=>const AlertDialog(title:Text('Cómo funciona'),content:Text('Regístrate una sola vez. Luego entra con tu PIN, solicita o acepta viajes y mantén el teléfono disponible para la comunicación y ubicación durante el viaje.')))),_QuickInfo(Icons.local_police,'Policía 106',onTap:()=>showDialog(context:c,builder:(d)=>AlertDialog(title:const Text('Emergencia policial'),content:const Text('¿Abrir el marcador con el 106?'),actions:[TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Cancelar')),FilledButton(onPressed:(){Navigator.pop(d);launchUrl(Uri(scheme:'tel',path:'106'));},child:const Text('Continuar'))]))),_QuickInfo(Icons.help,'Ayuda',onTap:()=>launchUrl(Uri.parse('https://wa.me/5354404056'),mode:LaunchMode.externalApplication))]))),
    const SizedBox(height:8),const Text('Holguín · Siempre en movimiento',textAlign:TextAlign.center,style:TextStyle(color:Color(0xff0d3b72),fontWeight:FontWeight.w800,fontSize:17))
   ]))
  ));
@@ -182,7 +183,7 @@ class RoleScreen extends StatelessWidget {const RoleScreen({super.key});
 }
 class _VehicleBadge extends StatelessWidget {const _VehicleBadge(this.icon,this.text);final IconData icon;final String text;@override Widget build(BuildContext c)=>Column(children:[CircleAvatar(backgroundColor:Colors.white,child:Icon(icon,color:const Color(0xff0d4c8c))),const SizedBox(height:4),Text(text,style:const TextStyle(color:Colors.white,fontWeight:FontWeight.w700,fontSize:11))]);}
 class _FeatureBadge extends StatelessWidget {const _FeatureBadge(this.icon,this.text);final IconData icon;final String text;@override Widget build(BuildContext c)=>Column(children:[CircleAvatar(backgroundColor:Colors.white,child:Icon(icon,color:const Color(0xff1565c0))),const SizedBox(height:4),Text(text,style:const TextStyle(fontWeight:FontWeight.w700,fontSize:11))]);}
-class _QuickInfo extends StatelessWidget {const _QuickInfo(this.icon,this.text);final IconData icon;final String text;@override Widget build(BuildContext c)=>SizedBox(width:68,child:Column(children:[Icon(icon,color:const Color(0xff1565c0)),const SizedBox(height:5),Text(text,textAlign:TextAlign.center,style:const TextStyle(fontSize:11,fontWeight:FontWeight.w700))]));}
+class _QuickInfo extends StatelessWidget {const _QuickInfo(this.icon,this.text,{this.onTap});final IconData icon;final String text;final VoidCallback? onTap;@override Widget build(BuildContext c)=>InkWell(borderRadius:BorderRadius.circular(12),onTap:onTap,child:Padding(padding:const EdgeInsets.symmetric(vertical:6),child:SizedBox(width:68,child:Column(children:[Icon(icon,color:const Color(0xff1565c0)),const SizedBox(height:5),Text(text,textAlign:TextAlign.center,style:const TextStyle(fontSize:11,fontWeight:FontWeight.w700))]))));}
 
 
 class AdminPinScreen extends StatefulWidget {const AdminPinScreen({super.key});@override State<AdminPinScreen> createState()=>_AdminPinScreenState();}
