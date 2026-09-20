@@ -85,6 +85,12 @@ class RestRafaelBackend implements RafaelBackend {
 
   Future<Map<String, dynamic>> adminDashboard() => _json('GET', '/v1/admin/dashboard');
 
+  Future<List<Map<String, dynamic>>> adminBusinesses() => _jsonList('GET', '/v1/admin/businesses');
+  Future<Map<String, dynamic>> createBusiness({required String name,required String phone,required String category}) => _json('POST','/v1/admin/businesses',body:{'name':name,'phone':phone,'category':category});
+  Future<Map<String, dynamic>> setBusinessActive(String id,bool active) => _json('PATCH','/v1/admin/businesses/$id',body:{'active':active});
+  Future<void> deleteBusiness(String id) async {await _json('DELETE','/v1/admin/businesses/$id');}
+
+
   Future<List<Map<String, dynamic>>> adminDrivers() => _jsonList('GET', '/v1/admin/drivers');
 
   Future<List<Map<String, dynamic>>> adminClients({String query = ''}) {
