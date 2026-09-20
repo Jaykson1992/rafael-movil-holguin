@@ -198,7 +198,7 @@ app.get('/v1/admin/dashboard',auth,role('admin'),(_,res)=>{
   const grossCup=completed.reduce((sum,t)=>sum+Number(t.finalPrice??t.offer??0),0);
   const pendingPayments=Object.values(db.paymentRequests||{}).filter(p=>p.status==='pending').length;
   const activeTrips=trips.filter(t=>!['completed','cancelled'].includes(t.status)).length;
-  res.json({clients:users.filter(u=>u.role==='client').length,drivers:users.filter(u=>u.role==='driver').length,activeDrivers:drivers.filter(d=>d.active!==false&&d.paidUntil&&Date.parse(d.paidUntil)>Date.now()).length,trips:trips.length,activeTrips,completedTrips:completed.length,grossCup,pendingPayments,monthlyFeeCup:db.settings.monthlyFeeCup});
+  const onlineClients=users.filter(u=>u.role==='client'&&u.active!==false&&Number.isFinite(Date.parse(u.lastSeenAt||0))&&Date.now()-Date.parse(u.lastSeenAt)<=2*60*1000).length; const onlineDrivers=users.filter(u=>u.role==='driver'&&freshLocation(db.locations[u.id])).length; const busyDrivers=users.filter(u=>u.role==='driver'&&freshLocation(db.locations[u.id])&&driverBusy(u.id)).length; res.json({clients:users.filter(u=>u.role==='client').length,onlineClients,drivers:users.filter(u=>u.role==='driver').length,onlineDrivers,busyDrivers,availableDrivers:Math.max(0,onlineDrivers-busyDrivers),activeDrivers:drivers.filter(d=>d.active!==false&&d.paidUntil&&Date.parse(d.paidUntil)>Date.now()).length,trips:trips.length,activeTrips,completedTrips:completed.length,grossCup,pendingPayments,monthlyFeeCup:db.settings.monthlyFeeCup});
 });
 bootstrapAdmin();
 const port=process.env.PORT||8080;
