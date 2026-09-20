@@ -156,6 +156,16 @@ app.patch('/v1/admin/clients/:id',auth,role('admin'),(req,res)=>{
   if(typeof req.body.active!=='boolean')return res.status(400).json({error:'invalid_fields'});
   u.active=req.body.active;audit(req.user,'client_updated',{clientId:u.id,active:u.active});save();res.json(publicUser(u));
 });
+app.delete('/v1/admin/trips/:id',auth,role('admin'),(req,res)=>{
+  const t=db.trips[req.params.id];
+  if(!t)return res.status(404).json({error:'not_found'});
+  if(!['completed','cancelled'].includes(t.status))return res.status(409).json({error:'trip_active'});
+  const snapshot={tripId:t.id,status:t.status,clientId:t.clientId,driverId:t.driverId||null,createdAt:t.createdAt,updatedAt:t.updatedAt};
+  delete db.trips[t.id];
+  audit(req.user,'trip_deleted',snapshot);
+  save();
+  res.json({ok:true,id:req.params.id});
+});
 app.get('/v1/admin/audit',auth,role('admin'),(req,res)=>{
   const limit=Math.min(Math.max(Number(req.query.limit)||50,1),200);
   const action=String(req.query.action||'').trim();
