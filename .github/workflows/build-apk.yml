@@ -47,7 +47,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq imagemagick
-          magick assets/rafael_logo.jpg -interlace none assets/rafael_logo_android.png
+          convert assets/rafael_logo.jpg -interlace none assets/rafael_logo_android.png
           sed -i 's|assets/rafael_logo.jpg|assets/rafael_logo_android.png|g' pubspec.yaml
           sed -i 's|android:label="rafael_movil_holguin"|android:label="Rafael Móvil Holguín"|g' android/app/src/main/AndroidManifest.xml
           dart run flutter_launcher_icons
