@@ -45,11 +45,8 @@ jobs:
         run: flutter pub get
       - name: Generar icono Android Rafael Movil
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq imagemagick
-          convert -background none assets/rafael_icon.svg -resize 1024x1024 assets/rafael_logo_icon.png
-          sed -i 's|assets/rafael_logo.jpg|assets/rafael_logo_icon.png|g' pubspec.yaml
-          sed -i 's|assets/rafael_logo.jpg|assets/rafael_logo_icon.png|g' lib/main.dart
+          # Mantener exactamente el logo aprobado configurado en pubspec.yaml.
+          # No sustituirlo por rafael_icon.svg durante la compilación.
           sed -i 's|android:label="rafael_movil_holguin"|android:label="Rafael Móvil Holguín"|g' android/app/src/main/AndroidManifest.xml
           dart run flutter_launcher_icons
       - name: Analizar
